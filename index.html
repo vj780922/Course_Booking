@@ -4,34 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>健身課程預約系統</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 這裡放 CSS */
+        body { font-family: "Calibri", "Microsoft JhengHei", sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 90%; max-width: 1000px; }
+        h1 { text-align: center; color: #333; }
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #ddd; text-align: center; padding: 12px; height: 50px; }
+        th { background-color: #007bff; color: white; }
+        td { cursor: pointer; transition: 0.3s; }
+        td:hover { background-color: #e9ecef; }
+        .booked { background-color: #ffcccc !important; color: #d00; font-size: 0.8em; }
+        .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: white; margin: 15% auto; padding: 20px; width: 300px; border-radius: 8px; }
+        input { width: 100%; padding: 8px; margin: 10px 0; box-sizing: border-box; }
+    </style>
 </head>
 <body>
 
 <div class="container">
     <h1>健身課程預約</h1>
-    
     <div class="controls">
-        <button id="prevWeek">上一週</button>
+        <button onclick="alert('切換功能開發中')">上一週</button>
         <span id="weekDisplay">2026/05/11 - 2026/05/17</span>
-        <button id="nextWeek">下一週</button>
+        <button onclick="alert('切換功能開發中')">下一週</button>
     </div>
-
     <table id="bookingTable">
         <thead>
             <tr>
-                <th>時段</th>
-                <th>週一</th>
-                <th>週二</th>
-                <th>週三</th>
-                <th>週四</th>
-                <th>週五</th>
-                <th>週六</th>
-                <th>週日</th>
+                <th>時段</th><th>週一</th><th>週二</th><th>週三</th><th>週四</th><th>週五</th><th>週六</th><th>週日</th>
             </tr>
         </thead>
-        <tbody id="tableBody">
-            </tbody>
+        <tbody id="tableBody"></tbody>
     </table>
 </div>
 
@@ -39,15 +44,46 @@
     <div class="modal-content">
         <h3>預約時段</h3>
         <p id="selectedSlotInfo"></p>
-        <label for="custName">客人姓名：</label>
-        <input type="text" id="custName" placeholder="請輸入姓名">
-        <div class="modal-btns">
-            <button onclick="saveBooking()">確認預約</button>
-            <button onclick="closeModal()" class="cancel-btn">取消</button>
-        </div>
+        <label>客人姓名：</label>
+        <input type="text" id="custName">
+        <button onclick="saveBooking()">確認預約</button>
+        <button onclick="closeModal()">取消</button>
     </div>
 </div>
 
-<script src="script.js"></script>
+<script>
+    // 這裡放 JavaScript
+    const tableBody = document.getElementById('tableBody');
+    const hours = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
+    let selectedCell = null;
+
+    function initTable() {
+        hours.forEach(hour => {
+            const row = document.createElement('tr');
+            const timeCell = document.createElement('td');
+            timeCell.innerText = `${hour} - ${parseInt(hour)+1}:00`;
+            row.appendChild(timeCell);
+            for (let i = 0; i < 7; i++) {
+                const cell = document.createElement('td');
+                cell.onclick = () => {
+                    selectedCell = cell;
+                    document.getElementById('modal').style.display = "block";
+                };
+                row.appendChild(cell);
+            }
+            tableBody.appendChild(row);
+        });
+    }
+    function closeModal() { document.getElementById('modal').style.display = "none"; }
+    function saveBooking() {
+        const name = document.getElementById('custName').value;
+        if(name) {
+            selectedCell.innerText = name;
+            selectedCell.classList.add('booked');
+            closeModal();
+        }
+    }
+    initTable();
+</script>
 </body>
 </html>
