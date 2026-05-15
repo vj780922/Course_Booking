@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>健身房預約管理系統</title>
     <style>
+        /* 基礎設定：設定統一的字體大小 16px */
+        :root {
+            --base-font-size: 16px;
+        }
+
         body { 
             font-family: "Calibri", "Microsoft JhengHei", sans-serif; 
             background-color: #f0f4f8; 
@@ -14,6 +19,7 @@
             padding: 40px 20px;
             margin: 0;
             color: #333;
+            font-size: var(--base-font-size);
         }
 
         .container { 
@@ -27,41 +33,42 @@
 
         h1 { text-align: center; color: #2b6cb0; margin-bottom: 30px; font-size: 24px; }
 
-        /* 管理員與密碼功能 */
+        /* 管理員工具列 */
         .admin-bar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px; }
-        .admin-btn { background: #718096; color: white; border: none; border-radius: 8px; padding: 8px 15px; cursor: pointer; font-weight: bold; }
+        .admin-btn { background: #718096; color: white; border: none; border-radius: 8px; padding: 8px 15px; cursor: pointer; font-weight: bold; font-size: var(--base-font-size); }
         .admin-mode-active { background: #e53e3e !important; }
 
         .controls { 
             display: flex; justify-content: space-between; align-items: center; 
             margin-bottom: 20px; background: #edf2f7; padding: 15px; border-radius: 12px;
         }
-        .nav-btn { background: #4299e1; color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+        .nav-btn { background: #4299e1; color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-weight: bold; font-size: var(--base-font-size); }
 
-        /* 表格與日期樣式 */
+        /* 表格樣式 */
         table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
-        th, td { border: 0.5px solid #e2e8f0; text-align: center; padding: 10px; height: 65px; }
+        th, td { border: 0.5px solid #e2e8f0; text-align: center; padding: 10px; height: 65px; font-size: var(--base-font-size); }
         
-        .date-main { font-size: 18px; font-weight: bold; color: #2d3748; }
-        .date-sub { font-size: 12px; color: #a0aec0; display: block; margin-top: 2px; }
+        /* 日期專用樣式 */
+        .date-main { font-weight: bold; color: #2d3748; } /* 與基礎字體一樣大 */
+        .date-sub { font-size: 12px; color: #a0aec0; display: block; margin-top: 2px; } /* 僅星期縮小 */
 
-        td { cursor: pointer; background: white; font-size: 14px; transition: 0.2s; }
+        td { cursor: pointer; background: white; transition: 0.2s; }
         td:hover { background-color: #ebf8ff; }
-        .time-col { background-color: #f7fafc; font-weight: bold; width: 130px; cursor: default; color: #4a5568; font-size: 13px; }
+        .time-col { background-color: #f7fafc; font-weight: bold; width: 130px; cursor: default; color: #4a5568; }
         
         .booked { background-color: #e6fffa !important; color: #2c7a7b; font-weight: bold; border-left: 4px solid #38b2ac; }
         .blocked { background-color: #4a5568 !important; color: white !important; cursor: not-allowed; }
 
-        /* Modal */
+        /* Modal 彈窗 */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); }
         .modal-content { background: white; margin: 10% auto; padding: 30px; width: 320px; border-radius: 15px; box-shadow: 0 20px 25px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; background: #f7fafc; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; background: #f7fafc; font-size: var(--base-font-size); }
         
         .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-        .save-btn { background: #4299e1; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .block-btn { background: #2d3748; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
-        .del-btn { background: #f56565; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
-        .cancel-btn { background: #edf2f7; color: #4a5568; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
+        .save-btn { background: #4299e1; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: var(--base-font-size); }
+        .block-btn { background: #2d3748; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: var(--base-font-size); }
+        .del-btn { background: #f56565; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: var(--base-font-size); }
+        .cancel-btn { background: #edf2f7; color: #4a5568; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: var(--base-font-size); }
 
         .footer-info { margin-top: 40px; text-align: center; color: #718096; font-size: 14px; line-height: 1.8; }
     </style>
@@ -90,7 +97,7 @@
 
 <div class="footer-info">
     <div style="margin-bottom:15px; font-weight:bold;">拜訪次數：<span id="busuanzi_value_site_pv">--</span> 次</div>
-    <div>作者：SJ | 版本：v1.2.0</div>
+    <div>作者：SJ | 版本：v1.1.1</div>
     <div>最後更新日期：2026-05-15</div>
 </div>
 
@@ -99,7 +106,7 @@
         <h3 id="modalTitle" style="margin:0 0 10px 0;">預約時段</h3>
         <p id="slotDetail" style="font-size: 12px; color: #a0aec0; margin-bottom:15px;"></p>
         <div id="userFields">
-            <label style="font-size:14px;">客人姓名：</label>
+            <label style="font-size:16px;">客人姓名：</label>
             <input type="text" id="custName" placeholder="請輸入姓名">
         </div>
         <div class="btn-group">
@@ -118,7 +125,6 @@
     let currentMonday = getMonday(new Date());
     let selectedId = null;
     
-    // 初始化密碼與資料
     let adminPwd = localStorage.getItem('gym_admin_pwd') || '0000';
     let db = JSON.parse(localStorage.getItem('gym_bookings')) || {};
 
@@ -145,6 +151,7 @@
 
             let th = document.createElement('th');
             const dayNames = ["一","二","三","四","五","六","日"];
+            // 這裡調整：date-main 與基礎字體一樣大，只有 date-sub 縮小
             th.innerHTML = `<span class="date-main">${dateStr.slice(5)}</span><span class="date-sub">(${dayNames[i]})</span>`;
             header.appendChild(th);
         }
