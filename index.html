@@ -62,4 +62,188 @@
 
         /* 表格風格：簡約清新 */
         table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
-        th, td { border: 0.5px solid #e2e8f0; text-align: center; padding: 12px; height: 60
+        th, td { border: 0.5px solid #e2e8f0; text-align: center; padding: 12px; height: 60px; }
+        th { background-color: #f7fafc; color: #4a5568; font-size: 14px; }
+        
+        td { cursor: pointer; background: white; font-size: 14px; }
+        td:hover { background-color: #ebf8ff; }
+        .time-col { background-color: #f8fafc; font-weight: bold; width: 120px; cursor: default; color: #2d3748; }
+        
+        .booked { background-color: #e6fffa !important; color: #2c7a7b; font-weight: bold; border-left: 4px solid #38b2ac; }
+        .blocked { background-color: #4a5568 !important; color: white !important; cursor: not-allowed; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); }
+        .modal-content { background: white; margin: 10% auto; padding: 30px; width: 320px; border-radius: 15px; box-shadow: 0 20px 25px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; background: #f7fafc; }
+        
+        .btn-group { display: flex; flex-direction: column; gap: 10px; }
+        .save-btn { background: #4299e1; color: white; }
+        .block-btn { background: #2d3748; color: white; }
+        .del-btn { background: #f56565; color: white; }
+        .cancel-btn { background: #edf2f7; color: #4a5568; }
+
+        /* 頁尾資訊風格 */
+        .footer-info {
+            margin-top: 40px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .visit-count { margin-bottom: 20px; color: #4a5568; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Fitness Booking 課程預約</h1>
+    
+    <div class="admin-switch">
+        <button id="adminToggle" class="admin-btn" onclick="toggleAdmin()">管理員模式</button>
+    </div>
+
+    <div class="controls">
+        <button class="nav-btn" onclick="changeWeek(-7)">◀ 上一週</button>
+        <span id="weekDisplay"></span>
+        <button class="nav-btn" onclick="changeWeek(7)">下一週 ▶</button>
+    </div>
+
+    <table id="bookingTable">
+        <thead><tr id="dateHeader"><th>時段</th></tr></thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<div class="footer-info">
+    <div class="visit-count">
+        拜訪次數：<span id="busuanzi_value_site_pv">--</span> 次
+    </div>
+    <div>作者：SJ</div>
+    <div>版本：v1.0.2</div>
+    <div>最後更新日期：2026-05-15</div>
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle" style="margin-top:0;">預約時段</h3>
+        <p id="slotDetail" style="font-size: 12px; color: #a0aec0;"></p>
+        <div id="userFields">
+            <label style="font-size:14px;">客人姓名：</label>
+            <input type="text" id="custName" placeholder="請輸入姓名">
+        </div>
+        <div class="btn-group">
+            <button id="saveBtn" class="save-btn" onclick="handleSave()">確認預約</button>
+            <button id="blockBtn" class="block-btn" onclick="handleBlock()">Block / 取消</button>
+            <button id="delBtn" class="del-btn" onclick="handleDelete()">刪除此預約</button>
+            <button class="cancel-btn" onclick="closeModal()">取消</button>
+        </div>
+    </div>
+</div>
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<script>
+    let isAdmin = false;
+    let currentMonday = getMonday(new Date());
+    let selectedId = null;
+    let db = JSON.parse(localStorage.getItem('gym_bookings')) || {};
+    const hours = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
+
+    function getMonday(d) {
+        d = new Date(d);
+        let day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1);
+        return new Date(d.setDate(diff));
+    }
+
+    function renderTable() {
+        const header = document.getElementById('dateHeader');
+        const body = document.getElementById('tableBody');
+        header.innerHTML = '<th style="width:100px;">時段</th>';
+        body.innerHTML = '';
+        let weekDates = [];
+        for (let i = 0; i < 7; i++) {
+            let d = new Date(currentMonday);
+            d.setDate(d.getDate() + i);
+            let dateStr = d.toISOString().split('T')[0];
+            weekDates.push(dateStr);
+            let th = document.createElement('th');
+            const days = ["一","二","三","四","五","六","日"];
+            th.innerHTML = `<span style="font-size:12px; color:#a0aec0">${dateStr.slice(5)}</span><br>${days[i]}`;
+            header.appendChild(th);
+        }
+        document.getElementById('weekDisplay').innerText = `${weekDates[0]} ~ ${weekDates[6]}`;
+
+        hours.forEach(hour => {
+            let row = document.createElement('tr');
+            let timeCell = document.createElement('td');
+            timeCell.innerText = hour;
+            timeCell.className = 'time-col';
+            row.appendChild(timeCell);
+
+            weekDates.forEach(date => {
+                let cell = document.createElement('td');
+                let id = `${date}_${hour}`;
+                if (db[id]) {
+                    if (db[id].type === 'blocked') {
+                        cell.classList.add('blocked');
+                        cell.innerText = "✕";
+                    } else {
+                        cell.innerText = db[id].name;
+                        cell.classList.add('booked');
+                    }
+                }
+                cell.onclick = () => openModal(id, date, hour);
+                row.appendChild(cell);
+            });
+            body.appendChild(row);
+        });
+    }
+
+    function toggleAdmin() {
+        isAdmin = !isAdmin;
+        document.getElementById('adminToggle').classList.toggle('admin-mode-active', isAdmin);
+        renderTable(); 
+    }
+
+    function openModal(id, date, hour) {
+        selectedId = id;
+        const data = db[id];
+        if (data && data.type === 'blocked' && !isAdmin) return;
+        document.getElementById('slotDetail').innerText = `${date} ${hour}:00`;
+        document.getElementById('custName').value = data ? (data.name || '') : '';
+        document.getElementById('blockBtn').style.display = isAdmin ? "block" : "none";
+        document.getElementById('delBtn').style.display = (isAdmin && data && data.type !== 'blocked') ? "block" : "none";
+        document.getElementById('modal').style.display = "block";
+    }
+
+    function handleSave() {
+        const name = document.getElementById('custName').value.trim();
+        if (!name) return alert("請輸入姓名");
+        db[selectedId] = { type: 'booked', name: name };
+        saveAndRefresh();
+    }
+
+    function handleBlock() {
+        if (db[selectedId] && db[selectedId].type === 'blocked') delete db[selectedId];
+        else db[selectedId] = { type: 'blocked' };
+        saveAndRefresh();
+    }
+
+    function handleDelete() {
+        if (confirm("確定刪除預約？")) { delete db[selectedId]; saveAndRefresh(); }
+    }
+
+    function saveAndRefresh() {
+        localStorage.setItem('gym_bookings', JSON.stringify(db));
+        closeModal();
+        renderTable();
+    }
+
+    function closeModal() { document.getElementById('modal').style.display = "none"; }
+    function changeWeek(days) { currentMonday.setDate(currentMonday.getDate() + days); renderTable(); }
+
+    renderTable();
+</script>
+</body>
+</html>
