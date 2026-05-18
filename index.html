@@ -3,185 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ili・能量工作紡 🥑</title>
+    <title>鈺見酪梨・健身預約 🥑</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
 
     <style>
         :root { 
             --primary-green: #38a169;
             --light-green: #f0fff4;
-            --booked-green: #c6f6d5; /* 私教已預約的淺綠色 */
+            --booked-green: #c6f6d5;
             --dark-gray: #2d3748;
-            --base-font-size: 16px;
+            --line-green: #06C755; /* LINE 品牌色 */
         }
         
         body { 
             font-family: "Calibri", "Microsoft JhengHei", sans-serif; 
-            background-color: #f7fafc; 
-            display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; color: var(--dark-gray); 
-            -webkit-tap-highlight-color: transparent;
+            background-color: #f7fafc; padding: 10px; margin: 0; color: var(--dark-gray); 
         }
 
-        .container { background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 1100px; box-sizing: border-box; }
+        .container { background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 1100px; margin: auto; box-sizing: border-box; }
         
+        /* 視覺切換器 */
         .type-selector { display: flex; background: #edf2f7; border-radius: 12px; padding: 4px; margin-bottom: 15px; }
-        .type-btn { flex: 1; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.3s; color: #718096; }
+        .type-btn { flex: 1; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 14px; color: #718096; }
         .type-btn.active { background: white; color: var(--primary-green); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        h1 { text-align: center; color: var(--primary-green); margin: 10px 0; font-size: 22px; }
+        /* 課表色彩邏輯 */
+        .color-pilates { background-color: #faf5ff !important; color: #6b46c1 !important; border-left: 4px solid #9f7aea; } /* 紫色 */
+        .color-animal { background-color: #fffaf0 !important; color: #dd6b20 !important; border-left: 4px solid #ed8936; } /* 橘色 */
+        .color-default { background-color: #ebf8ff !important; color: #2b6cb0 !important; border-left: 4px solid #4299e1; } /* 藍色 */
+        
+        /* 聯絡教練懸浮按鈕 */
+        .fab-contact { 
+            position: fixed; bottom: 25px; right: 25px; background-color: var(--line-green); 
+            color: white; padding: 12px 20px; border-radius: 50px; font-weight: bold; 
+            box-shadow: 0 4px 12px rgba(6,199,85,0.4); text-decoration: none; display: flex; align-items: center; gap: 8px; z-index: 999;
+            transition: transform 0.2s;
+        }
+        .fab-contact:active { transform: scale(0.95); }
 
-        .admin-bar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 10px; }
-        .admin-btn { background: #e2e8f0; color: #4a5568; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 12px; }
-        .admin-mode-active { background: #f56565 !important; color: white; }
-
-        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--light-green); padding: 10px; border-radius: 12px; }
-        .nav-btn { background: var(--primary-green); color: white; border: none; border-radius: 8px; padding: 8px 15px; cursor: pointer; font-weight: bold; }
-
-        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid #edf2f7; }
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 600px; }
+        /* 課表細節 */
+        .table-wrapper { width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid #edf2f7; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th, td { border: 1px solid #edf2f7; text-align: center; padding: 8px 4px; height: 60px; font-size: 13px; }
+        .time-col { background-color: #f8fafc; font-weight: bold; width: 65px; position: sticky; left: 0; z-index: 2; border-right: 2px solid #edf2f7; }
         
-        .date-main { font-weight: bold; color: var(--dark-gray); font-size: 15px; }
-        .date-sub { font-size: 11px; color: #a0aec0; display: block; }
+        .past-time { background-color: #f1f1f1 !important; color: #ccc !important; cursor: not-allowed !important; }
+        .booked-private { background-color: var(--booked-green) !important; color: #276749; font-weight: bold; border-left: 4px solid var(--primary-green); }
+        .occupied { background-color: #fbfbfb !important; color: #d0d0d0 !important; cursor: not-allowed; }
 
-        td { cursor: pointer; background: white; transition: background 0.2s; position: relative; }
-        .time-col { background-color: #f8fafc; font-weight: bold; width: 65px; color: #718096; position: sticky; left: 0; z-index: 2; border-right: 2px solid #edf2f7; }
-        
-        /* 狀態樣式更新 */
-        .booked-private { background-color: var(--booked-green) !important; color: #276749; font-weight: bold; }
-        .booked-group { background-color: #ebf8ff !important; color: #2b6cb0; }
-        .occupied { background-color: #f7fafc !important; color: #cbd5e0 !important; cursor: not-allowed; }
-        .full { background-color: #fff5f5 !important; color: #c53030 !important; font-weight: bold; cursor: not-allowed; }
-        .blocked { background-color: #cbd5e0 !important; color: white !important; cursor: not-allowed; }
-
-        /* 彈窗樣式 */
+        /* 彈窗優化 */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
-        .modal-content { 
-            background: white; position: absolute; bottom: 0; width: 100%; border-radius: 25px 25px 0 0; 
-            max-width: 100%; animation: slideUp 0.3s ease-out; box-sizing: border-box; overflow-y: auto; max-height: 90vh;
-        }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        .modal-banner { width: 100%; height: 100px; background: var(--primary-green) url('https://images.unsplash.com/photo-1518611012118-296072bb5604?auto=format&fit=crop&q=80&w=600') center/cover; }
-        .modal-body { padding: 20px 25px 40px 25px; }
+        .modal-content { background: white; position: absolute; bottom: 0; width: 100%; border-radius: 25px 25px 0 0; padding: 20px 25px 40px; box-sizing: border-box; }
         
-        .info-grid { background: #f7fafc; padding: 12px; border-radius: 12px; margin: 10px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .info-item { font-size: 13px; }
-        .info-label { color: #a0aec0; display: block; margin-bottom: 2px; }
-        
-        .capacity-box { background: #fffaf0; border: 1px dashed #ed8936; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 14px; text-align: center; }
-
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #edf2f7; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-        
-        .btn-group { display: flex; flex-direction: column; gap: 8px; }
-        .btn { border: none; padding: 14px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 16px; text-align: center; }
+        .btn { border: none; padding: 14px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; margin-top: 10px; }
         .btn-primary { background: var(--primary-green); color: white; }
+        .btn-line { background: var(--line-green); color: white; }
         .btn-outline { background: #f7fafc; color: #718096; }
-        .btn-danger { color: #f56565; background: transparent; font-size: 13px; }
 
-        .admin-section { border-top: 1px solid #edf2f7; margin-top: 15px; padding-top: 15px; }
-        
-        @media (min-width: 600px) {
-            .modal-content { bottom: auto; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; border-radius: 20px; }
-        }
+        input, textarea { width: 100%; padding: 14px; margin: 8px 0; border: 2px solid #edf2f7; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
+
+        #toast { visibility: hidden; background-color: #333; color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 100px; transform: translateX(-50%); }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+
+        @media (min-width: 600px) { .modal-content { bottom: auto; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; border-radius: 20px; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>鈺見酪梨・健身預約 🥑</h1>
-    
+    <h1 style="margin-bottom: 5px;">鈺見酪梨・健身預約 🥑</h1>
+    <p style="text-align: center; font-size: 12px; color: #a0aec0; margin-bottom: 15px;">健康，是為了遇見更好的自己</p>
+
     <div class="type-selector">
         <button id="btnGroup" class="type-btn active" onclick="switchType('group')">團體課程</button>
         <button id="btnPrivate" class="type-btn" onclick="switchType('private')">私人教練</button>
     </div>
 
     <div class="admin-bar">
-        <button id="adminToggle" class="admin-btn" onclick="toggleAdmin()">管理員</button>
-    </div>
-    
-    <div class="controls">
-        <button class="nav-btn" onclick="changeWeek(-7)">◀</button>
-        <span id="weekDisplay" style="font-size: 14px; font-weight: bold;">讀取中...</span>
-        <button class="nav-btn" onclick="changeWeek(7)">▶</button>
+        <button id="adminToggle" class="admin-btn" style="background:none; border:none; color:#cbd5e0; cursor:pointer;" onclick="toggleAdmin()">⚙️</button>
     </div>
 
     <div class="table-wrapper">
-        <table id="bookingTable">
-            <thead><tr id="dateHeader"><th class="time-col">時段</th></tr></thead>
+        <table>
+            <thead><tr id="dateHeader"></tr></thead>
             <tbody id="tableBody"></tbody>
         </table>
     </div>
 </div>
 
+<a href="https://line.me/ti/p/你的LINE_ID" target="_blank" class="fab-contact">
+    <span>💬 聯絡教練</span>
+</a>
+
 <div id="modal" class="modal" onclick="if(event.target==this) closeModal()">
     <div class="modal-content">
-        <div class="modal-banner"></div>
-        <div class="modal-body">
-            <h2 id="mTitle" style="margin:5px 0;">課程預約</h2>
-            <div style="font-size: 14px; color: var(--primary-green);">教練：鈺珊 ILi 🥑</div>
-
-            <div class="info-grid">
-                <div class="info-item"><span class="info-label">日期</span><span id="mDate" style="font-weight:bold;"></span></div>
-                <div class="info-item"><span class="info-label">時段</span><span id="mTime" style="font-weight:bold;"></span></div>
-            </div>
-
-            <div id="groupInfo" class="capacity-box" style="display:none;">
-                目前人數：<span id="curCount" style="color:red; font-weight:bold;">0</span> / <span id="maxCount">5</span>
-            </div>
-
-            <div id="userFields">
-                <input type="text" id="custName" placeholder="請輸入學員姓名">
-            </div>
-
-            <div class="btn-group">
-                <button id="saveBtn" class="btn btn-primary" onclick="handleSave()">確認預約</button>
-                
-                <div id="adminArea" class="admin-section" style="display:none;">
-                    <div id="nameList" style="font-size:12px; color:#718096; margin-bottom:10px; background:#f0f4f8; padding:8px; border-radius:8px;"></div>
-                    <label style="font-size:12px;">團課上限設定：</label>
-                    <input type="number" id="inputLimit" placeholder="設定上限" style="padding:8px; margin-bottom:10px;">
-                    <button class="btn btn-outline" style="font-size:13px;" onclick="handleBlock()">暫停/開放時段</button>
-                </div>
-
-                <button id="delBtn" class="btn btn-danger" style="display:none;" onclick="handleDelete()">清空此時段</button>
-                <button class="btn btn-outline" style="border:none;" onclick="closeModal()">取消返回</button>
-            </div>
+        <h2 id="mTitle" style="margin:0 0 5px; color:var(--dark-gray);">載入中...</h2>
+        <div id="mDesc" style="font-size:14px; color:#718096; margin-bottom:15px; line-height:1.5;"></div>
+        
+        <div id="userBooking">
+            <input type="text" id="custName" placeholder="學員全名">
+            <button class="btn btn-primary" onclick="handleSave()">✅ 立即預約課程</button>
+            <a href="https://line.me/ti/p/你的LINE_ID" target="_blank" class="btn btn-line">💬 諮詢課程細節</a>
         </div>
+
+        <div id="adminPanel" style="display:none; border-top:2px dashed #eee; margin-top:20px; padding-top:15px;">
+            <p style="color:red; font-size:12px; margin-bottom:5px;">管理員設定：</p>
+            <input type="text" id="editTitle" placeholder="課程名稱 (例: 皮拉提斯)">
+            <textarea id="editDesc" placeholder="課程介紹與相關規定" rows="3"></textarea>
+            <input type="number" id="editMax" placeholder="人數上限">
+            <button class="btn btn-primary" style="background:#4a5568;" onclick="handleAdminUpdate()">💾 儲存課程內容</button>
+            <button class="btn btn-outline" style="color:red; font-size:12px;" onclick="handleDelete()">🗑 清空此時段</button>
+        </div>
+        <button class="btn btn-outline" style="border:none; margin-top:5px; color:#cbd5e0;" onclick="closeModal()">返回列表</button>
     </div>
 </div>
+
+<div id="toast"></div>
 
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyBQBRoaz-nlEIqVoTVhHWkAUY8BVPNYpSg",
         authDomain: "gym-booking-7029b.firebaseapp.com",
         databaseURL: "https://gym-booking-7029b-default-rtdb.firebaseio.com",
-        projectId: "gym-booking-7029b",
-        storageBucket: "gym-booking-7029b.firebasestorage.app",
-        messagingSenderId: "843407214922",
-        appId: "1:843407214922:web:0e7fa36481113fedb3d9b3"
+        projectId: "gym-booking-7029b"
     };
 
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
+    const auth = firebase.auth();
+    auth.signInAnonymously();
 
     let isAdmin = false;
     let currentMonday = getMonday(new Date());
-    let viewType = 'group'; // 預設優先看團課
+    let viewType = 'group';
     let db = {};
     let selectedId = null;
-    let adminPwd = '0000';
-
-    const hours = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
-
-    database.ref('bookings').on('value', (snapshot) => {
-        db = snapshot.val() || {};
-        renderTable();
-    });
-
-    database.ref('adminConfig/password').on('value', (snapshot) => { if(snapshot.exists()) adminPwd = snapshot.val(); });
 
     function getMonday(d) {
         d = new Date(d);
@@ -189,157 +148,111 @@
         return new Date(d.setDate(diff));
     }
 
-    function switchType(type) {
-        viewType = type;
-        document.getElementById('btnPrivate').classList.toggle('active', type === 'private');
-        document.getElementById('btnGroup').classList.toggle('active', type === 'group');
-        renderTable();
+    database.ref('bookings').on('value', (s) => { db = s.val() || {}; renderTable(); });
+
+    // 自動判斷顏色類別
+    function getCourseClass(title) {
+        if (!title) return 'color-default';
+        if (title.includes('皮拉提斯')) return 'color-pilates';
+        if (title.includes('動物流')) return 'color-animal';
+        return 'color-default';
     }
 
     function renderTable() {
         const header = document.getElementById('dateHeader');
         const body = document.getElementById('tableBody');
-        header.innerHTML = '<th class="time-col">時段</th>';
+        const now = new Date();
+        header.innerHTML = '<th class="time-col">時間</th>';
         body.innerHTML = '';
 
-        let weekDates = [];
-        for (let i = 0; i < 7; i++) {
-            let d = new Date(currentMonday);
-            d.setDate(d.getDate() + i);
-            let dateStr = d.toISOString().split('T')[0];
-            weekDates.push(dateStr);
-            let th = document.createElement('th');
-            const dayNames = ["一","二","三","四","五","六","日"];
-            th.innerHTML = `<span class="date-main">${dateStr.slice(8)}</span><span class="date-sub">週${dayNames[i]}</span>`;
-            header.appendChild(th);
+        let dates = [];
+        for(let i=0; i<7; i++){
+            let d = new Date(currentMonday); d.setDate(d.getDate()+i);
+            let ds = d.toISOString().split('T')[0];
+            dates.push(ds);
+            header.innerHTML += `<th>${ds.slice(8)}<br><small>${["一","二","三","四","五","六","日"][i]}</small></th>`;
         }
-        document.getElementById('weekDisplay').innerText = `${weekDates[0].slice(5)} ~ ${weekDates[6].slice(5)}`;
 
-        hours.forEach(hour => {
-            let row = document.createElement('tr');
-            let tCell = document.createElement('td');
-            tCell.innerText = hour;
-            tCell.className = 'time-col';
-            row.appendChild(tCell);
-
-            weekDates.forEach(date => {
-                let id = `${date}_${hour}`;
+        ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"].forEach(h => {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `<td class="time-col">${h}</td>`;
+            dates.forEach(d => {
+                let id = `${d}_${h}`;
                 let cell = document.createElement('td');
                 let data = db[id];
+                let isPast = new Date(`${d}T${h}`) < now;
 
-                if (data) {
-                    if (data.type === 'blocked') {
-                        cell.classList.add('blocked');
-                        cell.innerText = "✕";
-                    } else if (data.mode === 'group') {
+                if(isPast) cell.classList.add('past-time');
+
+                if(data){
+                    if(data.mode === 'group'){
                         let count = data.members ? Object.keys(data.members).length : 0;
-                        let max = data.max || 5;
-                        if (viewType === 'group') {
-                            cell.classList.add('booked-group');
-                            cell.innerHTML = `團課<br>${count}/${max}`;
-                            if (count >= max) cell.classList.add('full');
-                        } else {
-                            // 私教模式下看到團課
-                            cell.classList.add('occupied');
-                            cell.innerText = "團課佔用";
-                        }
-                    } else if (data.mode === 'private') {
-                        if (viewType === 'private') {
+                        if(viewType === 'group'){
+                            cell.classList.add(getCourseClass(data.title));
+                            cell.innerHTML = `<strong>${data.title || '團課'}</strong><br>${count}/${data.max || 5}`;
+                            if(count >= (data.max || 5)) cell.classList.add('full');
+                        } else { cell.classList.add('occupied'); cell.innerText = '團課佔用'; }
+                    } else if(data.mode === 'private'){
+                        if(viewType === 'private'){
                             cell.classList.add('booked-private');
                             cell.innerText = isAdmin ? data.name : "已預約";
-                        } else {
-                            // 團課模式下看到私教
-                            cell.classList.add('occupied');
-                            cell.innerText = "私教佔用";
-                        }
+                        } else { cell.classList.add('occupied'); cell.innerText = '私教佔用'; }
                     }
                 }
-                cell.onclick = () => openModal(id, date, hour);
-                row.appendChild(cell);
+                cell.onclick = () => { if(!isPast || isAdmin) openModal(id, d, h); };
+                tr.appendChild(cell);
             });
-            body.appendChild(row);
+            body.appendChild(tr);
         });
     }
 
-    function openModal(id, date, hour) {
-        selectedId = id;
-        const data = db[id];
-        
-        // 邏輯阻斷
-        if (!isAdmin) {
-            if (data && data.type === 'blocked') return;
-            if (data && data.mode !== viewType) return alert("此時段已被其他類型課程佔用");
-            if (data && data.mode === 'group' && data.members && Object.keys(data.members).length >= (data.max || 5)) return alert("此團體課程已滿額");
-        }
-
-        document.getElementById('mTitle').innerText = viewType === 'private' ? "私人教練指導" : "團體課程 (皮拉/動物流)";
-        document.getElementById('mDate').innerText = date;
-        document.getElementById('mTime').innerText = hour + ":00";
+    function openModal(id, d, h) {
+        selectedId = id; const data = db[id];
+        document.getElementById('mTitle').innerText = (data && data.title) || (viewType==='group' ? "團體課程預約" : "私人教練預約");
+        document.getElementById('mDesc').innerText = (data && data.desc) || "歡迎預約！若有任何問題，歡迎點擊下方聯絡教練諮詢。";
         document.getElementById('custName').value = "";
         
-        const isGroup = viewType === 'group';
-        document.getElementById('groupInfo').style.display = isGroup ? "block" : "none";
-        if (isGroup) {
-            let count = (data && data.members) ? Object.keys(data.members).length : 0;
-            let max = (data && data.max) ? data.max : 5;
-            document.getElementById('curCount').innerText = count;
-            document.getElementById('maxCount').innerText = max;
-            document.getElementById('inputLimit').value = max;
-        }
+        document.getElementById('adminPanel').style.display = isAdmin ? "block" : "none";
+        document.getElementById('userBooking').style.display = isAdmin ? "none" : "block";
 
-        document.getElementById('adminArea').style.display = isAdmin ? "block" : "none";
-        document.getElementById('delBtn').style.display = (isAdmin && data) ? "block" : "none";
-        
-        if (isAdmin && data) {
-            let names = "";
-            if (data.mode === 'private') names = "預約學員：" + data.name;
-            else if (data.members) names = "團課名單：" + Object.values(data.members).join(', ');
-            document.getElementById('nameList').innerText = names;
-        } else {
-            document.getElementById('nameList').innerText = "";
+        if(isAdmin && data) {
+            document.getElementById('editTitle').value = data.title || "";
+            document.getElementById('editDesc').value = data.desc || "";
+            document.getElementById('editMax').value = data.max || 5;
         }
-
         document.getElementById('modal').style.display = "block";
     }
 
     function handleSave() {
         const name = document.getElementById('custName').value.trim();
-        if (!name) return alert("請輸入姓名");
-
-        const ref = database.ref('bookings/' + selectedId);
-        if (viewType === 'private') {
-            ref.set({ mode: 'private', name: name });
-        } else {
-            ref.child('mode').set('group');
-            ref.child('members').push(name);
-            let limit = isAdmin ? document.getElementById('inputLimit').value : 5;
-            ref.child('max').transaction(m => m || parseInt(limit));
-        }
+        if(!name) return alert("請輸入學員姓名");
+        const ref = database.ref('bookings/'+selectedId);
+        if(viewType === 'private') ref.update({ mode: 'private', name: name });
+        else { ref.child('mode').set('group'); ref.child('members').push(name); }
+        showToast("預約成功！記得準時出席喔 🥑");
         closeModal();
     }
 
-    function handleBlock() {
-        const ref = database.ref('bookings/' + selectedId);
-        if (db[selectedId] && db[selectedId].type === 'blocked') ref.remove().then(() => closeModal());
-        else ref.set({ type: 'blocked' }).then(() => closeModal());
+    function handleAdminUpdate() {
+        const ref = database.ref('bookings/'+selectedId);
+        ref.update({
+            mode: 'group',
+            title: document.getElementById('editTitle').value,
+            desc: document.getElementById('editDesc').value,
+            max: parseInt(document.getElementById('editMax').value) || 5
+        }).then(() => { showToast("課程設定已更新"); closeModal(); });
     }
 
-    function handleDelete() {
-        if (confirm("確定清空此時段？")) database.ref('bookings/' + selectedId).remove().then(() => closeModal());
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg; t.className = "show";
+        setTimeout(() => { t.className = ""; }, 3000);
     }
 
-    function toggleAdmin() {
-        if (!isAdmin) {
-            let input = prompt("管理員密碼：");
-            if (input === adminPwd) isAdmin = true;
-        } else isAdmin = false;
-        document.getElementById('adminToggle').classList.toggle('admin-mode-active', isAdmin);
-        renderTable();
-    }
-
+    function switchType(t) { viewType = t; document.getElementById('btnGroup').classList.toggle('active', t==='group'); document.getElementById('btnPrivate').classList.toggle('active', t==='private'); renderTable(); }
+    function toggleAdmin() { let p = prompt("請輸入密碼"); if(p === '0000') { isAdmin = !isAdmin; showToast(isAdmin ? "管理模式已開啟" : "已關閉管理模式"); renderTable(); } }
     function closeModal() { document.getElementById('modal').style.display = "none"; }
-    function changeWeek(days) { currentMonday.setDate(currentMonday.getDate() + days); renderTable(); }
-
+    function handleDelete() { if(confirm("確定清空？")) database.ref('bookings/'+selectedId).remove().then(closeModal); }
     renderTable();
 </script>
 </body>
