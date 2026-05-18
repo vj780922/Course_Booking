@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>鈺見酪梨・健身預約 🥑</title>
+    <title>Ili 能量工作紡🥑</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -15,6 +15,7 @@
             --light-green: #f0fff4;
             --booked-green: #c6f6d5;
             --dark-gray: #2d3748;
+            --danger-red: #f56565;
         }
         
         body { 
@@ -22,9 +23,8 @@
             background-color: #f7fafc; padding: 10px; margin: 0; color: var(--dark-gray); 
         }
 
-        .container { background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 1100px; box-sizing: border-box; }
+        .container { background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 1100px; margin: auto; box-sizing: border-box; }
         
-        /* 頂部切換 */
         .type-selector { display: flex; background: #edf2f7; border-radius: 12px; padding: 4px; margin-bottom: 15px; }
         .type-btn { flex: 1; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 14px; color: #718096; transition: 0.2s; }
         .type-btn.active { background: white; color: var(--primary-green); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -33,24 +33,22 @@
 
         .admin-bar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 10px; }
         .admin-btn { background: #e2e8f0; color: #4a5568; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
-        .admin-mode-active { background: #f56565 !important; color: white; }
+        .admin-mode-active { background: var(--danger-red) !important; color: white; }
 
-        /* 課表主體 */
         .table-wrapper { width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid #edf2f7; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 600px; }
         th, td { border: 1px solid #edf2f7; text-align: center; padding: 8px 4px; height: 60px; font-size: 13px; }
         .time-col { background-color: #f8fafc; font-weight: bold; width: 65px; position: sticky; left: 0; z-index: 2; border-right: 2px solid #edf2f7; }
         
-        /* 狀態 */
         .past-time { background-color: #f1f1f1 !important; color: #ccc !important; cursor: not-allowed !important; }
         .booked-private { background-color: var(--booked-green) !important; color: #276749; font-weight: bold; }
         .booked-group { background-color: #ebf8ff !important; color: #2b6cb0; }
         .occupied { background-color: #fbfbfb !important; color: #d0d0d0 !important; cursor: not-allowed; }
         .full { background-color: #fff5f5 !important; color: #c53030 !important; font-weight: bold; }
+        .blocked { background-color: #cbd5e0 !important; color: white !important; cursor: not-allowed !important; }
 
-        /* 彈窗與提示 */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
-        .modal-content { background: white; position: absolute; bottom: 0; width: 100%; border-radius: 25px 25px 0 0; animation: slideUp 0.3s ease-out; padding: 20px 25px 40px; box-sizing: border-box; }
+        .modal-content { background: white; position: absolute; bottom: 0; width: 100%; border-radius: 25px 25px 0 0; animation: slideUp 0.3s ease-out; padding: 20px 25px 40px; box-sizing: border-box; max-height: 90vh; overflow-y: auto; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
         #toast { visibility: hidden; min-width: 200px; background-color: #333; color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%); }
@@ -58,10 +56,11 @@
         @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
         @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
 
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #edf2f7; border-radius: 10px; font-size: 15px; box-sizing: border-box; }
-        .btn { border: none; padding: 14px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%; margin-top: 10px; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #edf2f7; border-radius: 10px; font-size: 15px; box-sizing: border-box; font-family: inherit; }
+        .btn { border: none; padding: 14px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%; margin-top: 10px; transition: 0.2s; }
         .btn-primary { background: var(--primary-green); color: white; }
         .btn-outline { background: #f7fafc; color: #718096; }
+        .btn-danger { background: var(--danger-red); color: white; }
 
         @media (min-width: 600px) { .modal-content { bottom: auto; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; border-radius: 20px; } }
     </style>
@@ -69,13 +68,13 @@
 <body>
 
 <div class="container">
-    <h1>鈺見酪梨・健身預約 🥑</h1>
+    <h1>Ili 能量工作紡🥑</h1>
     <div class="type-selector">
         <button id="btnGroup" class="type-btn active" onclick="switchType('group')">團體課程</button>
         <button id="btnPrivate" class="type-btn" onclick="switchType('private')">私人教練</button>
     </div>
     <div class="admin-bar">
-        <button id="adminToggle" class="admin-btn" onclick="toggleAdmin()">管理員</button>
+        <button id="adminToggle" class="admin-btn" onclick="toggleAdmin()">管理員模式</button>
     </div>
     <div class="table-wrapper">
         <table id="bookingTable">
@@ -87,23 +86,37 @@
 
 <div id="modal" class="modal" onclick="if(event.target==this) closeModal()">
     <div class="modal-content">
-        <h2 id="mTitle" style="margin:0 0 10px;">載入中...</h2>
-        <div id="mDesc" style="font-size:14px; color:#666; margin-bottom:10px;"></div>
-        <div id="mInfo" style="background:#f9f9f9; padding:10px; border-radius:10px; font-size:13px; margin-bottom:15px;"></div>
+        <h2 id="mTitle" style="margin:0 0 5px;">載入中...</h2>
+        <div id="mInfo" style="font-size:12px; color:#a0aec0; margin-bottom:10px;"></div>
+        <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
         
-        <div id="userBooking">
-            <input type="text" id="custName" placeholder="請輸入學員姓名">
-            <button class="btn btn-primary" onclick="handleSave()">確認預約</button>
+        <div id="userSection">
+            <div id="mDesc" style="font-size:14px; color:#4a5568; line-height:1.6; background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:15px;"></div>
+            <div id="mStatusDisplay" style="margin-bottom:15px; font-weight:bold;"></div>
+            <div id="bookingForm">
+                <input type="text" id="custName" placeholder="請輸入您的姓名">
+                <button class="btn btn-primary" onclick="handleSave()">確認預約</button>
+            </div>
         </div>
 
-        <div id="adminPanel" style="display:none; border-top:2px dashed #eee; margin-top:15px; padding-top:15px;">
-            <input type="text" id="editTitle" placeholder="課程名稱">
-            <textarea id="editDesc" placeholder="課程介紹" rows="2"></textarea>
-            <input type="number" id="editMax" placeholder="人數上限">
-            <button class="btn btn-primary" style="background:#4a5568;" onclick="handleAdminUpdate()">儲存設定</button>
-            <button class="btn btn-outline" style="color:red;" onclick="handleDelete()">清空名單</button>
+        <div id="adminSection" style="display:none;">
+            <p style="font-weight:bold; color:var(--danger-red); margin-bottom:10px;">🛠 管理員排課設定</p>
+            <label style="font-size:12px; color:#718096;">課程名稱 (若留空則不開放團課)</label>
+            <input type="text" id="editTitle" placeholder="例如：核心皮拉提斯">
+            <label style="font-size:12px; color:#718096;">課程詳細介紹</label>
+            <textarea id="editDesc" placeholder="輸入課程介紹內容..." rows="3"></textarea>
+            <label style="font-size:12px; color:#718096;">人數上限</label>
+            <input type="number" id="editMax" placeholder="預設 5 人">
+            
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary" onclick="handleAdminUpdate()">儲存設定</button>
+                <button id="blockBtn" class="btn btn-outline" onclick="handleBlockToggle()">暫停預約</button>
+            </div>
+            <button class="btn btn-danger" style="background:#edf2f7; color:#f56565; margin-top:10px;" onclick="handleDelete()">清空此時段所有預約</button>
+            <div id="adminMemberList" style="margin-top:15px; font-size:12px; color:#4a5568; background:#fffaf0; padding:10px; border-radius:8px;"></div>
         </div>
-        <button class="btn btn-outline" onclick="closeModal()">關閉</button>
+
+        <button class="btn btn-outline" style="border:none;" onclick="closeModal()">關閉返回</button>
     </div>
 </div>
 
@@ -120,9 +133,7 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     const auth = firebase.auth();
-
-    // 1. 安全管理：匿名登入以啟用資料庫存取權限
-    auth.signInAnonymously().catch(e => console.error("Auth error", e));
+    auth.signInAnonymously();
 
     let isAdmin = false;
     let currentMonday = getMonday(new Date());
@@ -160,20 +171,26 @@
                 let id = `${d}_${h}`;
                 let cell = document.createElement('td');
                 let data = db[id];
-                
-                // 3. 自動清理/過期檢查
-                let slotTime = new Date(`${d}T${h}`);
-                let isPast = slotTime < now;
+                let isPast = new Date(`${d}T${h}`) < now;
+
                 if(isPast) cell.classList.add('past-time');
 
                 if(data){
-                    if(data.mode === 'group'){
+                    if(data.type === 'blocked') {
+                        cell.classList.add('blocked');
+                        cell.innerText = "✕";
+                    } else if(data.mode === 'group'){
                         let count = data.members ? Object.keys(data.members).length : 0;
-                        cell.classList.add(viewType === 'group' ? 'booked-group' : 'occupied');
-                        cell.innerHTML = viewType === 'group' ? `${data.title || '團課'}<br>${count}/${data.max || 5}` : '團課佔用';
+                        if(viewType === 'group'){
+                            cell.classList.add('booked-group');
+                            cell.innerHTML = `<b>${data.title || '團課'}</b><br>${count}/${data.max || 5}`;
+                            if(count >= (data.max || 5)) cell.classList.add('full');
+                        } else { cell.classList.add('occupied'); cell.innerText = '團課佔用'; }
                     } else if(data.mode === 'private'){
-                        cell.classList.add(viewType === 'private' ? 'booked-private' : 'occupied');
-                        cell.innerText = viewType === 'private' ? (isAdmin ? data.name : "已預約") : '私教佔用';
+                        if(viewType === 'private'){
+                            cell.classList.add('booked-private');
+                            cell.innerText = isAdmin ? data.name : "已預約";
+                        } else { cell.classList.add('occupied'); cell.innerText = '私教佔用'; }
                     }
                 }
                 
@@ -186,55 +203,140 @@
 
     function openModal(id, d, h) {
         selectedId = id; const data = db[id];
-        document.getElementById('mTitle').innerText = (data && data.title) || "預約課程";
-        document.getElementById('mDesc').innerText = (data && data.desc) || "請確認日期時段並填寫姓名。";
-        document.getElementById('mInfo').innerText = `時間：${d} ${h}:00`;
+        const isPast = new Date(`${d}T${h}`) < new Date();
+        
+        document.getElementById('mInfo').innerText = `📅 日期：${d} | ⏰ 時間：${h}:00`;
         document.getElementById('custName').value = "";
         
-        document.getElementById('adminPanel').style.display = isAdmin ? "block" : "none";
-        document.getElementById('userBooking').style.display = isAdmin ? "none" : "block";
-
-        if(isAdmin && data) {
-            document.getElementById('editTitle').value = data.title || "";
-            document.getElementById('editDesc').value = data.desc || "";
-            document.getElementById('editMax').value = data.max || 5;
+        // 視角分流
+        if (isAdmin) {
+            document.getElementById('userSection').style.display = "none";
+            document.getElementById('adminSection').style.display = "block";
+            document.getElementById('mTitle').innerText = "時段排程管理";
+            
+            document.getElementById('editTitle').value = (data && data.title) || "";
+            document.getElementById('editDesc').value = (data && data.desc) || "";
+            document.getElementById('editMax').value = (data && data.max) || 5;
+            document.getElementById('blockBtn').innerText = (data && data.type === 'blocked') ? "恢復預約" : "暫停預約";
+            
+            let members = (data && data.members) ? Object.values(data.members).join(", ") : (data && data.name ? data.name : "無人預約");
+            document.getElementById('adminMemberList').innerText = "目前名單：" + members;
+        } else {
+            document.getElementById('userSection').style.display = "block";
+            document.getElementById('adminSection').style.display = "none";
+            
+            // 訪客預約邏輯
+            if (data && data.type === 'blocked') {
+                document.getElementById('mTitle').innerText = "此時段暫不開放";
+                document.getElementById('mDesc').innerText = "抱歉，教練目前調整此時段為不開放預約狀態。";
+                document.getElementById('bookingForm').style.display = "none";
+                document.getElementById('mStatusDisplay').innerText = "⛔ 目前關閉中";
+            } else if (data && data.mode !== viewType && data.mode !== undefined) {
+                document.getElementById('mTitle').innerText = "時段已佔用";
+                document.getElementById('mDesc').innerText = "此時段已被其他類型的課程佔用。";
+                document.getElementById('bookingForm').style.display = "none";
+                document.getElementById('mStatusDisplay').innerText = "⛔ 無法預約";
+            } else {
+                document.getElementById('mTitle').innerText = (data && data.title) || (viewType === 'group' ? "團體課程預約" : "私人教練預約");
+                document.getElementById('mDesc').innerText = (data && data.desc) || "歡迎預約課程，請於下方輸入姓名完成報名。";
+                document.getElementById('bookingForm').style.display = "block";
+                
+                if (viewType === 'group') {
+                    let count = (data && data.members) ? Object.keys(data.members).length : 0;
+                    let max = (data && data.max) || 5;
+                    document.getElementById('mStatusDisplay').innerHTML = `目前人數：<span style="color:red">${count}</span> / ${max}`;
+                    if (count >= max) {
+                        document.getElementById('bookingForm').style.display = "none";
+                        document.getElementById('mStatusDisplay').innerText += " (已滿額)";
+                    }
+                } else {
+                    document.getElementById('mStatusDisplay').innerText = data ? "⛔ 已經有人預約了" : "✅ 尚可預約";
+                    if (data) document.getElementById('bookingForm').style.display = "none";
+                }
+            }
         }
         document.getElementById('modal').style.display = "block";
     }
 
     function handleSave() {
-        // 2. 學員體驗：預約前確認
+        // 重點修正：提交前再次檢查資料狀態，防止覆蓋
         const name = document.getElementById('custName').value.trim();
         if(!name) return alert("請輸入學員姓名");
-        if(!confirm(`確認預約 ${selectedId.replace('_',' ')} 嗎？`)) return;
-
+        
         const ref = database.ref('bookings/'+selectedId);
-        if(viewType === 'private') ref.update({ mode: 'private', name: name });
-        else { ref.child('mode').set('group'); ref.child('members').push(name); }
-        showToast("預約成功！🥑");
-        closeModal();
+        
+        // 抓取最新資料進行安全校驗
+        ref.get().then((snapshot) => {
+            const data = snapshot.val();
+            if (data && data.type === 'blocked') return alert("很抱歉，此時段剛剛已關閉預約。");
+            
+            if(viewType === 'private') {
+                if (data && data.name) return alert("此時段已被預約，請選擇其他時段。");
+                ref.update({ mode: 'private', name: name });
+            } else {
+                if (data && data.mode === 'private') return alert("此時段已被私教課程佔用。");
+                let count = (data && data.members) ? Object.keys(data.members).length : 0;
+                let max = (data && data.max) || 5;
+                if (count >= max) return alert("此課程剛剛已滿額，請選擇其他課程。");
+                
+                ref.child('mode').set('group');
+                ref.child('members').push(name);
+            }
+            showToast("預約成功！🥑");
+            closeModal();
+        });
     }
 
     function handleAdminUpdate() {
+        const title = document.getElementById('editTitle').value.trim();
         const ref = database.ref('bookings/'+selectedId);
         ref.update({
             mode: 'group',
-            title: document.getElementById('editTitle').value,
+            type: 'open',
+            title: title,
             desc: document.getElementById('editDesc').value,
             max: parseInt(document.getElementById('editMax').value) || 5
-        }).then(() => { showToast("設定已更新"); closeModal(); });
+        }).then(() => { showToast("課程設定已更新"); closeModal(); });
     }
 
-    function handleDelete() { if(confirm("確定清空？")) database.ref('bookings/'+selectedId).remove().then(closeModal); }
+    function handleBlockToggle() {
+        const ref = database.ref('bookings/'+selectedId);
+        if (db[selectedId] && db[selectedId].type === 'blocked') {
+            ref.child('type').set('open').then(() => closeModal());
+        } else {
+            ref.update({ type: 'blocked' }).then(() => { showToast("已暫停預約"); closeModal(); });
+        }
+    }
+
+    function handleDelete() { 
+        if(confirm("確定要清空此時段所有設定與預約嗎？")) {
+            database.ref('bookings/'+selectedId).remove().then(() => {
+                showToast("已清空");
+                closeModal();
+            });
+        }
+    }
 
     function showToast(msg) {
         const t = document.getElementById('toast');
         t.innerText = msg; t.className = "show";
-        setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+        setTimeout(() => { t.className = ""; }, 3000);
     }
 
     function switchType(t) { viewType = t; document.getElementById('btnGroup').classList.toggle('active', t==='group'); document.getElementById('btnPrivate').classList.toggle('active', t==='private'); renderTable(); }
-    function toggleAdmin() { let p = prompt("密碼"); if(p === '0000') { isAdmin = !isAdmin; renderTable(); } }
+    
+    function toggleAdmin() { 
+        let p = prompt("請輸入管理員密碼"); 
+        if(p === '0000') { 
+            isAdmin = !isAdmin; 
+            document.getElementById('adminToggle').classList.toggle('admin-mode-active', isAdmin);
+            showToast(isAdmin ? "進入管理員模式" : "回到學員視角");
+            renderTable(); 
+        } else if (p !== null) {
+            alert("密碼錯誤");
+        }
+    }
+    
     function closeModal() { document.getElementById('modal').style.display = "none"; }
     renderTable();
 </script>
