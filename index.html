@@ -39,31 +39,28 @@
         table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 700px; }
         th, td { border: 1px solid #edf2f7; text-align: center; padding: 8px 4px; height: 65px; font-size: 13px; }
         
-        /* 時間區間欄位寬度調整 */
         .time-col { background-color: #f8fafc; font-weight: bold; width: 90px; position: sticky; left: 0; z-index: 2; border-right: 2px solid #edf2f7; font-size: 11px; }
         
-        /* 各種狀態樣式 */
         .past-time { background-color: #f1f1f1 !important; color: #ccc !important; cursor: not-allowed !important; }
         .booked-private { background-color: var(--booked-green) !important; color: #276749; font-weight: bold; }
         .booked-group { background-color: #ebf8ff !important; color: #2b6cb0; }
         .full { background-color: #fff5f5 !important; color: #c53030 !important; font-weight: bold; }
         .blocked { background-color: #cbd5e0 !important; color: white !important; cursor: not-allowed !important; }
-        .not-available { background-color: #fafafa !important; color: #eee !important; cursor: not-allowed !important; }
-        
-        /* 禁止符號樣式 */
-        .forbidden { background-color: #fff5f5 !important; color: #feb2b2 !important; cursor: not-allowed !important; font-size: 18px; }
+        .occupied-other { background-color: #f7fafc !important; color: #a0aec0 !important; font-style: italic; }
+        .not-available { background-color: #fafafa !important; cursor: not-allowed !important; }
 
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
         .modal-content { background: white; position: absolute; bottom: 0; width: 100%; border-radius: 25px 25px 0 0; animation: slideUp 0.3s ease-out; padding: 20px 25px 40px; box-sizing: border-box; max-height: 90vh; overflow-y: auto; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        #toast { visibility: hidden; min-width: 200px; background-color: #333; color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%); }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #edf2f7; border-radius: 10px; font-size: 15px; box-sizing: border-box; font-family: inherit; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #edf2f7; border-radius: 10px; font-size: 15px; box-sizing: border-box; }
         .btn { border: none; padding: 14px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%; margin-top: 10px; }
         .btn-primary { background: var(--primary-green); color: white; }
+        .btn-admin { background: #4a5568; color: white; }
         .btn-outline { background: #f7fafc; color: #718096; }
+
+        #toast { visibility: hidden; min-width: 200px; background-color: #333; color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%); }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
 
         @media (min-width: 600px) { .modal-content { bottom: auto; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; border-radius: 20px; } }
     </style>
@@ -80,7 +77,7 @@
         <button id="adminToggle" class="admin-btn" onclick="toggleAdmin()">管理員模式</button>
     </div>
     <div class="table-wrapper">
-        <table id="bookingTable">
+        <table>
             <thead><tr id="dateHeader"></tr></thead>
             <tbody id="tableBody"></tbody>
         </table>
@@ -93,32 +90,27 @@
         <div id="mInfo" style="font-size:12px; color:#a0aec0; margin-bottom:10px;"></div>
         <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
         
-        <div id="userSection">
-            <div id="mDesc" style="font-size:14px; color:#4a5568; line-height:1.6; background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:15px;"></div>
+        <div id="bookingSection">
+            <div id="mDesc" style="font-size:14px; color:#4a5568; margin-bottom:15px;"></div>
             <div id="mStatusDisplay" style="margin-bottom:15px; font-weight:bold;"></div>
-            <div id="bookingForm">
-                <input type="text" id="custName" placeholder="請輸入您的姓名">
-                <button class="btn btn-primary" onclick="handleSave()">確認預約</button>
-            </div>
+            <input type="text" id="custName" placeholder="輸入預約姓名">
+            <button id="saveBtn" class="btn btn-primary" onclick="handleSave()">確認預約</button>
         </div>
 
-        <div id="adminSection" style="display:none;">
-            <p style="font-weight:bold; color:var(--danger-red); margin-bottom:10px;">🛠 排課設定</p>
-            <input type="text" id="editTitle" placeholder="課程名稱 (必填才開放預約)">
-            <textarea id="editDesc" placeholder="課程詳細介紹" rows="3"></textarea>
-            <input type="number" id="editMax" placeholder="人數上限 (預設 5)">
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-primary" onclick="handleAdminUpdate()">儲存設定</button>
-                <button id="blockBtn" class="btn btn-outline" onclick="handleBlockToggle()">暫停預約</button>
-            </div>
-            <button class="btn btn-outline" style="color:red; margin-top:10px;" onclick="handleDelete()">清空此時段</button>
-            <div id="adminMemberList" style="margin-top:15px; font-size:12px; color:#4a5568; background:#fffaf0; padding:10px; border-radius:8px;"></div>
+        <div id="adminSection" style="display:none; border-top: 2px solid #f7fafc; margin-top:20px; padding-top:10px;">
+            <p style="font-weight:bold; color:var(--danger-red);">🛠 管理員設定 (僅您可見)</p>
+            <input type="text" id="editTitle" placeholder="團課課程名稱">
+            <textarea id="editDesc" placeholder="團課介紹內容" rows="2"></textarea>
+            <input type="number" id="editMax" placeholder="人數上限">
+            <button class="btn btn-admin" onclick="handleAdminUpdate()">儲存團課排程</button>
+            <button id="blockBtn" class="btn btn-outline" onclick="handleBlockToggle()">暫停預約</button>
+            <button class="btn btn-outline" style="color:red;" onclick="handleDelete()">清空該時段</button>
         </div>
         <button class="btn btn-outline" style="border:none;" onclick="closeModal()">返回列表</button>
     </div>
 </div>
 
-<div id="toast">操作成功！</div>
+<div id="toast"></div>
 
 <script>
     const firebaseConfig = {
@@ -159,27 +151,23 @@
             let d = new Date(currentMonday); d.setDate(d.getDate()+i);
             let ds = d.toISOString().split('T')[0];
             dates.push(ds);
-            header.innerHTML += `<th>${ds.slice(8)}<br><small>週${["一","二","三","四","五","六","日"][i]}</small></th>`;
+            // 修改日期格式為 M/D
+            let dateLabel = `${d.getMonth()+1}/${d.getDate()}`;
+            header.innerHTML += `<th>${dateLabel}<br><small>週${["一","二","三","四","五","六","日"][i]}</small></th>`;
         }
 
-        // 時段區間定義
-        const timeSlots = [
-            "09:00~10:00", "10:00~11:00", "11:00~12:00", "12:00~13:00", 
-            "13:00~14:00", "14:00~15:00", "15:00~16:00", "16:00~17:00", 
-            "17:00~18:00", "18:00~19:00", "19:00~20:00", "20:00~21:00"
-        ];
+        const timeSlots = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
 
-        timeSlots.forEach(slot => {
+        timeSlots.forEach(h => {
             let tr = document.createElement('tr');
-            tr.innerHTML = `<td class="time-col">${slot}</td>`;
-            let startTime = slot.split('~')[0];
+            let endH = (parseInt(h)+1).toString().padStart(2, '0') + ":00";
+            tr.innerHTML = `<td class="time-col">${h}~${endH}</td>`;
             
             dates.forEach(d => {
-                let id = `${d}_${startTime}`;
+                let id = `${d}_${h}`;
                 let cell = document.createElement('td');
                 let data = db[id];
-                let isPast = new Date(`${d}T${startTime}`) < now;
-                let canClick = true;
+                let isPast = new Date(`${d}T${h}`) < now;
 
                 if(isPast) cell.classList.add('past-time');
 
@@ -187,121 +175,103 @@
                     if(data.type === 'blocked') {
                         cell.classList.add('blocked'); cell.innerText = "✕";
                     } else if(data.mode === 'group'){
-                        // 團課處理
-                        if(viewType === 'group'){
-                            let count = data.members ? Object.keys(data.members).length : 0;
-                            cell.classList.add('booked-group');
-                            cell.innerHTML = `<b>${data.title}</b><br>${count}/${data.max || 5}`;
-                            if(count >= (data.max || 5)) cell.classList.add('full');
-                        } else {
-                            // 管理員與學員在私教模式下看見團課：禁止符號
-                            cell.classList.add('forbidden'); cell.innerText = "🚫";
-                            canClick = isAdmin; // 管理員在私教下點選團課時段仍可進行編輯/清空
-                        }
+                        let count = data.members ? Object.keys(data.members).length : 0;
+                        cell.classList.add(viewType === 'group' ? 'booked-group' : 'occupied-other');
+                        cell.innerHTML = `<b>${data.title}</b><br>${count}/${data.max || 5}`;
+                        if(count >= (data.max || 5)) cell.classList.add('full');
                     } else if(data.mode === 'private'){
-                        // 私教處理
-                        if(viewType === 'private'){
-                            cell.classList.add('booked-private');
-                            cell.innerText = isAdmin ? data.name : "已預約";
-                        } else {
-                            cell.classList.add('forbidden'); cell.innerText = "🚫";
-                            canClick = isAdmin;
-                        }
+                        cell.classList.add(viewType === 'private' ? 'booked-private' : 'occupied-other');
+                        cell.innerText = (viewType === 'private' && isAdmin) ? data.name : "已預約";
                     }
-                } else {
-                    // 無資料狀態
-                    if(!isAdmin && viewType === 'group'){
-                        // 學員模式+團課：未設定課程則不可點選
-                        cell.classList.add('not-available');
-                        canClick = false;
-                    }
+                } else if(!isAdmin && viewType === 'group') {
+                    cell.classList.add('not-available');
                 }
-                
-                cell.onclick = () => { if(canClick && (!isPast || isAdmin)) openModal(id, d, startTime, slot); };
+
+                cell.onclick = () => { 
+                    // 點擊判定：管理員隨時可點，學員僅限可預約時段
+                    let canUserClick = (viewType === 'private' && !data) || (viewType === 'group' && data && data.mode === 'group');
+                    if(isAdmin || (canUserClick && !isPast)) openModal(id, d, h); 
+                };
                 tr.appendChild(cell);
             });
             body.appendChild(tr);
         });
     }
 
-    function openModal(id, d, h, slot) {
+    function openModal(id, d, h) {
         selectedId = id; const data = db[id];
-        document.getElementById('mInfo').innerText = `📅 ${d} | ⏰ ${slot}`;
+        document.getElementById('mTitle').innerText = (data && data.title) || (viewType==='group'?"團體課":"私人教練");
+        document.getElementById('mInfo').innerText = `📅 日期：${d} | ⏰ 時間：${h}:00`;
         document.getElementById('custName').value = "";
         
-        if (isAdmin) {
-            document.getElementById('userSection').style.display = "none";
-            document.getElementById('adminSection').style.display = "block";
-            document.getElementById('mTitle').innerText = "排程管理中心";
+        // UI 分流
+        document.getElementById('adminSection').style.display = isAdmin ? "block" : "none";
+        document.getElementById('mDesc').innerText = (data && data.desc) || "歡迎預約課程，請輸入姓名後確認。";
+        
+        if(isAdmin) {
             document.getElementById('editTitle').value = (data && data.title) || "";
             document.getElementById('editDesc').value = (data && data.desc) || "";
             document.getElementById('editMax').value = (data && data.max) || 5;
             document.getElementById('blockBtn').innerText = (data && data.type === 'blocked') ? "恢復預約" : "暫停預約";
-            let members = (data && data.members) ? Object.values(data.members).join(", ") : (data && data.name ? data.name : "無");
-            document.getElementById('adminMemberList').innerText = "預約名單：" + members;
+            document.getElementById('saveBtn').innerText = "代客預約";
         } else {
-            document.getElementById('userSection').style.display = "block";
-            document.getElementById('adminSection').style.display = "none";
-            document.getElementById('mTitle').innerText = (data && data.title) || (viewType==='group'?"團體課":"私人教練");
-            document.getElementById('mDesc').innerText = (data && data.desc) || "歡迎預約！";
-            
-            // 狀態控制
-            if (data && data.mode !== viewType && data.mode !== undefined) {
-                document.getElementById('bookingForm').style.display = "none";
-                document.getElementById('mStatusDisplay').innerText = "🚫 此時段已佔用";
-            } else {
-                document.getElementById('bookingForm').style.display = "block";
-                if(viewType === 'group'){
-                    let count = (data && data.members) ? Object.keys(data.members).length : 0;
-                    let max = (data && data.max) || 5;
-                    document.getElementById('mStatusDisplay').innerText = `目前人數：${count} / ${max}`;
-                    if(count >= max) document.getElementById('bookingForm').style.display = "none";
-                } else {
-                    document.getElementById('mStatusDisplay').innerText = data ? "🚫 已被預約" : "✅ 尚可預約";
-                    if(data) document.getElementById('bookingForm').style.display = "none";
-                }
-            }
+            document.getElementById('saveBtn').innerText = "確認預約";
         }
+
+        // 狀態顯示
+        if(data && data.mode === 'group'){
+            let count = data.members ? Object.keys(data.members).length : 0;
+            document.getElementById('mStatusDisplay').innerText = `目前人數：${count} / ${data.max || 5}`;
+        } else {
+            document.getElementById('mStatusDisplay').innerText = data ? "此時段已被佔用" : "目前無人預約";
+        }
+
         document.getElementById('modal').style.display = "block";
     }
 
     function handleSave() {
         const name = document.getElementById('custName').value.trim();
-        if(!name) return alert("請輸入姓名");
+        if(!name) return alert("請輸入學員姓名");
+        
         const ref = database.ref('bookings/'+selectedId);
         ref.get().then((snapshot) => {
             const data = snapshot.val();
+            if(!isAdmin) {
+                if(viewType === 'private' && data) return alert("已被預約");
+                if(viewType === 'group' && (!data || data.mode !== 'group')) return alert("無開放團課");
+            }
+            
+            // 執行預約 (代客或學員)
             if(viewType === 'private') {
-                if (data) return alert("此時段已被佔用");
                 ref.update({ mode: 'private', name: name });
             } else {
-                if (data && data.mode !== 'group') return alert("無法預約此時段");
+                if(!data) return alert("請先設定團課名稱");
                 ref.child('members').push(name);
             }
-            showToast("預約成功！🥑"); closeModal();
+            showToast(isAdmin ? "已幫學員完成預約 🥑" : "預約成功！🥑");
+            closeModal();
         });
     }
 
     function handleAdminUpdate() {
         const title = document.getElementById('editTitle').value.trim();
-        if(!title) return alert("請輸入課程名稱才可開放預約");
+        if(!title) return alert("請輸入課程名稱");
         database.ref('bookings/'+selectedId).update({
             mode: 'group', type: 'open', title: title,
             desc: document.getElementById('editDesc').value,
             max: parseInt(document.getElementById('editMax').value) || 5
-        }).then(() => { showToast("已儲存"); closeModal(); });
+        }).then(() => { showToast("已建立排程"); closeModal(); });
     }
 
     function handleBlockToggle() {
-        const ref = database.ref('bookings/'+selectedId);
         const isBlocked = db[selectedId] && db[selectedId].type === 'blocked';
-        ref.update({ type: isBlocked ? 'open' : 'blocked' }).then(closeModal);
+        database.ref('bookings/'+selectedId).update({ type: isBlocked ? 'open' : 'blocked' }).then(closeModal);
     }
 
-    function handleDelete() { if(confirm("確定清空？")) database.ref('bookings/'+selectedId).remove().then(closeModal); }
+    function handleDelete() { if(confirm("確定要清空此時段？")) database.ref('bookings/'+selectedId).remove().then(closeModal); }
     function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.className = "show"; setTimeout(() => { t.className = ""; }, 3000); }
     function switchType(t) { viewType = t; document.getElementById('btnGroup').classList.toggle('active', t==='group'); document.getElementById('btnPrivate').classList.toggle('active', t==='private'); renderTable(); }
-    function toggleAdmin() { let p = prompt("密碼"); if(p === '0000') { isAdmin = !isAdmin; document.getElementById('adminToggle').classList.toggle('admin-mode-active', isAdmin); renderTable(); } }
+    function toggleAdmin() { let p = prompt("請輸入管理員密碼"); if(p === '0000') { isAdmin = !isAdmin; document.getElementById('adminToggle').classList.toggle('admin-mode-active', isAdmin); renderTable(); } }
     function closeModal() { document.getElementById('modal').style.display = "none"; }
     renderTable();
 </script>
