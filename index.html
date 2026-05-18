@@ -42,38 +42,18 @@
         .admin-btn { background: #e2e8f0; color: #4a5568; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
         .admin-mode-active { background: var(--danger-red) !important; color: white; }
 
-        .table-wrapper { 
-            width: 100%; 
-            overflow: auto; 
-            max-height: 70vh; 
-            border-radius: 12px; 
-            border: 1px solid #edf2f7; 
-        }
-        
+        .table-wrapper { width: 100%; overflow: auto; max-height: 70vh; border-radius: 12px; border: 1px solid #edf2f7; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 800px; }
         
-        thead th { 
-            position: sticky; top: 0; z-index: 10; 
-            background-color: #f8fafc; border-bottom: 2px solid #edf2f7; padding: 10px 4px;
-        }
+        thead th { position: sticky; top: 0; z-index: 10; background-color: #f8fafc; border-bottom: 2px solid #edf2f7; padding: 10px 4px; }
+        .time-col { position: sticky; left: 0; z-index: 9; background-color: #f8fafc !important; font-weight: bold; width: 95px; border-right: 2px solid #edf2f7; }
         
-        .time-col { 
-            position: sticky; left: 0; z-index: 9; 
-            background-color: #f8fafc !important; font-weight: bold; width: 95px; 
-            border-right: 2px solid #edf2f7; box-shadow: 2px 0 5px rgba(0,0,0,0.02);
-        }
-        
-        thead th.time-col { z-index: 11; }
         th, td { border: 1px solid #edf2f7; text-align: center; padding: 8px 4px; height: 75px; font-size: 12px; box-sizing: border-box; }
         
-        /* 狀態樣式 */
         .past-time { background-color: #f1f1f1 !important; color: #ccc !important; }
         .booked-private { background-color: var(--booked-green) !important; color: #276749; }
         .booked-group { background-color: #ebf8ff !important; color: #2b6cb0; }
-        .occupied-other { background-color: #f7fafc !important; color: #a0aec0; }
-        .not-available { background-color: #fafafa !important; cursor: not-allowed !important; }
-        
-        /* 暫停預約樣式 */
+        .full { background-color: #fff5f5 !important; color: #c53030 !important; font-weight: bold; }
         .blocked { background-color: #cbd5e0 !important; color: white !important; font-size: 18px; font-weight: bold; }
 
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
@@ -82,6 +62,7 @@
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #edf2f7; border-radius: 10px; font-size: 15px; box-sizing: border-box; font-family: inherit; }
         .btn { border: none; padding: 14px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%; margin-top: 10px; }
         .btn-primary { background: var(--primary-green); color: white; }
+        .btn-disabled { background: #cbd5e0; color: #718096; cursor: not-allowed; }
         .btn-admin { background: #4a5568; color: white; }
         .btn-outline { background: #f7fafc; color: #718096; }
 
@@ -95,24 +76,20 @@
 
 <div class="container">
     <h1>Ili 能量工作紡🥑</h1>
-    
     <div class="week-nav">
         <div id="weekRange"></div>
         <button class="nav-btn" onclick="changeWeek(-7)">← 上一週</button>
         <button class="nav-btn" onclick="changeWeek(7)">下一週 →</button>
     </div>
-
     <div class="type-selector">
         <button id="btnGroup" class="type-btn active" onclick="switchType('group')">團體課程</button>
         <button id="btnPrivate" class="type-btn" onclick="switchType('private')">私人教練</button>
     </div>
-
     <div class="admin-bar">
         <button id="adminToggle" class="admin-btn" onclick="toggleAdmin()">管理員模式</button>
     </div>
-
     <div class="table-wrapper">
-        <table id="mainTable">
+        <table>
             <thead><tr id="dateHeader"></tr></thead>
             <tbody id="tableBody"></tbody>
         </table>
@@ -124,24 +101,22 @@
         <h2 id="mTitle">載入中...</h2>
         <div id="mInfo" style="font-size:12px; color:#a0aec0; margin-bottom:10px;"></div>
         <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
-        
         <div id="bookingSection">
             <div id="mDesc" style="font-size:14px; color:#4a5568; margin-bottom:15px;"></div>
-            <div id="mStatusDisplay" style="margin-bottom:15px; font-weight:bold; color: var(--primary-green);"></div>
+            <div id="mStatusDisplay" style="margin-bottom:15px; font-weight:bold;"></div>
             <div id="mMembersDisplay" style="margin-bottom:15px; font-size:13px; color:#718096; background: #f7fafc; padding: 10px; border-radius: 8px; display: none;"></div>
             <div id="formFields">
                 <input type="text" id="custName" placeholder="輸入預約姓名">
                 <button id="saveBtn" class="btn btn-primary" onclick="handleSave()">確認預約</button>
             </div>
         </div>
-
         <div id="adminSection" style="display:none; border-top: 2px solid #f7fafc; margin-top:20px; padding-top:10px;">
             <p style="font-weight:bold; color:var(--danger-red);">🛠 管理員工具</p>
             <input type="text" id="editTitle" placeholder="團課課程名稱">
             <textarea id="editDesc" placeholder="課程詳情內容" rows="2"></textarea>
             <input type="number" id="editMax" placeholder="人數上限">
             <button class="btn btn-admin" onclick="handleAdminUpdate()">儲存團課設定</button>
-            <button id="blockBtn" class="btn btn-outline" style="background: #edf2f7;" onclick="handleBlockToggle()">暫停/恢復預約</button>
+            <button id="blockBtn" class="btn btn-outline" onclick="handleBlockToggle()">暫停/恢復預約</button>
             <button class="btn btn-outline" style="color:red;" onclick="handleDelete()">清空並還原時段</button>
         </div>
         <button class="btn btn-outline" style="border:none;" onclick="closeModal()">返回列表</button>
@@ -189,7 +164,6 @@
         const body = document.getElementById('tableBody');
         const weekRangeDisplay = document.getElementById('weekRange');
         const now = new Date();
-        
         header.innerHTML = '<th class="time-col">時段</th>';
         body.innerHTML = '';
 
@@ -198,8 +172,7 @@
             let d = new Date(currentMonday); d.setDate(d.getDate()+i);
             let ds = d.toISOString().split('T')[0];
             dates.push(ds);
-            let label = `${d.getMonth()+1}/${d.getDate()}`;
-            header.innerHTML += `<th>${label}<br><small>週${["一","二","三","四","五","六","日"][i]}</small></th>`;
+            header.innerHTML += `<th>${d.getMonth()+1}/${d.getDate()}<br><small>週${["一","二","三","四","五","六","日"][i]}</small></th>`;
         }
         weekRangeDisplay.innerText = `${dates[0].replace(/-/g,'/')} ~ ${dates[6].replace(/-/g,'/')}`;
 
@@ -207,9 +180,7 @@
 
         timeSlots.forEach(h => {
             let tr = document.createElement('tr');
-            let endH = (parseInt(h)+1).toString().padStart(2, '0') + ":00";
-            tr.innerHTML = `<td class="time-col">${h}~${endH}</td>`;
-            
+            tr.innerHTML = `<td class="time-col">${h}~${(parseInt(h)+1).toString().padStart(2, '0')}:00</td>`;
             dates.forEach(d => {
                 let id = `${d}_${h}`;
                 let cell = document.createElement('td');
@@ -217,33 +188,20 @@
                 let isPast = new Date(`${d}T${h}`) < now;
 
                 if(isPast) cell.classList.add('past-time');
-
                 if(data){
                     if(data.type === 'blocked') {
                         cell.classList.add('blocked'); cell.innerText = "✕";
                     } else if(data.mode === 'group'){
+                        let count = data.members ? Object.keys(data.members).length : 0;
                         cell.classList.add(viewType === 'group' ? 'booked-group' : 'occupied-other');
-                        cell.innerHTML = `<b>${data.title}</b>`;
-                        if(isAdmin) {
-                            let names = data.members ? Object.values(data.members).join(",") : "無";
-                            cell.innerHTML += `<span class="name-list">${names}</span>`;
-                        } else {
-                            let count = data.members ? Object.keys(data.members).length : 0;
-                            cell.innerHTML += `<br>${count}/${data.max || 5}`;
-                        }
+                        if(count >= (data.max || 5)) cell.classList.add('full');
+                        cell.innerHTML = `<b>${data.title}</b><br>${count}/${data.max || 5}`;
                     } else if(data.mode === 'private'){
                         cell.classList.add(viewType === 'private' ? 'booked-private' : 'occupied-other');
                         cell.innerText = isAdmin ? data.name : "已預約";
                     }
-                } else if(!isAdmin && viewType === 'group') {
-                    cell.classList.add('not-available');
                 }
-
-                cell.onclick = () => { 
-                    let isBlocked = data && data.type === 'blocked';
-                    let canUserClick = !isBlocked && (isAdmin || (viewType === 'private' && !data) || (viewType === 'group' && data && data.mode === 'group'));
-                    if(isAdmin || (canUserClick && !isPast)) openModal(id, d, h); 
-                };
+                cell.onclick = () => { if(isAdmin || (!isPast)) openModal(id, d, h); };
                 tr.appendChild(cell);
             });
             body.appendChild(tr);
@@ -252,35 +210,39 @@
 
     function openModal(id, d, h) {
         selectedId = id; const data = db[id];
-        const isBlocked = data && data.type === 'blocked';
-        
-        document.getElementById('mTitle').innerText = isBlocked ? "此時段已關閉" : ((data && data.title) || (viewType==='group'?"團體課程":"私人教練"));
+        const count = (data && data.members) ? Object.keys(data.members).length : 0;
+        const max = (data && data.max) || 5;
+        const isFull = count >= max;
+
+        document.getElementById('mTitle').innerText = (data && data.title) || (viewType==='group'?"團體課":"私教時段");
         document.getElementById('mInfo').innerText = `📅 ${d} | ⏰ ${h}:00`;
-        document.getElementById('custName').value = "";
-        
         document.getElementById('adminSection').style.display = isAdmin ? "block" : "none";
-        document.getElementById('mDesc').innerText = isBlocked ? "管理員已暫停此時段預約。" : ((data && data.desc) || "歡迎預約。");
         
-        // 鎖定狀態 UI 處理
-        document.getElementById('formFields').style.display = isBlocked && !isAdmin ? "none" : "block";
-        document.getElementById('blockBtn').innerText = isBlocked ? "恢復預約功能" : "暫停此時段預約";
+        // 狀態顯示與按鈕邏輯
+        const saveBtn = document.getElementById('saveBtn');
+        if(!isAdmin && data && data.mode === 'group' && isFull) {
+            document.getElementById('mStatusDisplay').innerText = "⚠️ 此時段已額滿，無法預約";
+            document.getElementById('mStatusDisplay').style.color = "red";
+            saveBtn.innerText = "已額滿";
+            saveBtn.className = "btn btn-disabled";
+            saveBtn.disabled = true;
+        } else {
+            document.getElementById('mStatusDisplay').innerText = data && data.mode==='group' ? `目前人數：${count} / ${max}` : "";
+            document.getElementById('mStatusDisplay').style.color = "var(--primary-green)";
+            saveBtn.innerText = isAdmin ? "代客預約" : "確認預約";
+            saveBtn.className = "btn btn-primary";
+            saveBtn.disabled = false;
+        }
 
         const membersArea = document.getElementById('mMembersDisplay');
-        if(data && data.members) {
+        if(data && (data.members || data.name)) {
             membersArea.style.display = "block";
-            membersArea.innerText = "已預約：" + Object.values(data.members).join("、");
-        } else if(data && data.name) {
-            membersArea.style.display = "block";
-            membersArea.innerText = "預約人：" + data.name;
-        } else {
-            membersArea.style.display = "none";
-        }
+            membersArea.innerText = data.members ? "已預約：" + Object.values(data.members).join("、") : "預約人：" + data.name;
+        } else { membersArea.style.display = "none"; }
 
         if(isAdmin) {
             document.getElementById('editTitle').value = (data && data.title) || "";
-            document.getElementById('editDesc').value = (data && data.desc) || "";
-            document.getElementById('editMax').value = (data && data.max) || 5;
-            document.getElementById('saveBtn').innerText = "代客預約";
+            document.getElementById('editMax').value = max;
         }
         document.getElementById('modal').style.display = "block";
     }
@@ -288,16 +250,18 @@
     function handleSave() {
         const name = document.getElementById('custName').value.trim();
         if(!name) return alert("請輸入姓名");
-        const ref = database.ref('bookings/'+selectedId);
-        ref.get().then((snapshot) => {
+        
+        database.ref('bookings/'+selectedId).get().then((snapshot) => {
             const data = snapshot.val();
-            if(data && data.type === 'blocked') return alert("此時段不開放預約");
-            if(viewType === 'private') {
-                ref.update({ mode: 'private', name: name });
-            } else {
-                if(!data) return alert("尚未排課");
-                ref.child('members').push(name);
+            // BUG 修復核心：後端人數檢查
+            if(!isAdmin && data && data.mode === 'group') {
+                const count = data.members ? Object.keys(data.members).length : 0;
+                if(count >= (data.max || 5)) return alert("抱歉，預約期間內人數已滿！");
             }
+            
+            const ref = database.ref('bookings/'+selectedId);
+            if(viewType === 'private') { ref.update({ mode: 'private', name: name }); }
+            else { if(!data) return alert("尚未排課"); ref.child('members').push(name); }
             showToast("預約成功 🥑"); closeModal();
         });
     }
@@ -307,9 +271,8 @@
         if(!title) return alert("請輸入課程名稱");
         database.ref('bookings/'+selectedId).update({
             mode: 'group', title: title, type: 'open',
-            desc: document.getElementById('editDesc').value,
             max: parseInt(document.getElementById('editMax').value) || 5
-        }).then(() => { showToast("排程已更新"); closeModal(); });
+        }).then(() => { showToast("已更新設定"); closeModal(); });
     }
 
     function handleBlockToggle() {
